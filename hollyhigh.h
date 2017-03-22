@@ -105,10 +105,12 @@ class Data
 		DIR *dir;
 		struct dirent *ent;
 		string name;
-		if ((dir = opendir ("./ISEdata/")) != NULL) {
+		//if ((dir = opendir ("./ISEdata_with_R/")) != NULL) {
+	    if ((dir = opendir ("./ISEdata/")) != NULL) {
 		  while ((ent = readdir (dir)) != NULL) {
 		    name = ent->d_name;
-		    //cout << "./ISEdata/"+name << endl;
+		    cout << "./ISEdata/"+name << endl;
+		    //ISEfilelist.push_back("./ISEdata_with_R/"+name);
 		    ISEfilelist.push_back("./ISEdata/"+name);
 		  }
 		  closedir (dir);
@@ -120,7 +122,7 @@ class Data
 		  // print all the files and directories within directory 
 		  while ((ent = readdir (dir)) != NULL) {
 		    name = ent->d_name;
-		    //cout << "./CRSPdata/"+name << endl;
+		    cout << "./CRSPdata/"+name << endl;
 		    CRSPfilelist.push_back("./CRSPdata/"+name);
 		  }
 		  closedir (dir);
@@ -132,17 +134,15 @@ class Data
 
 	void loaddata()
 	{
-		//cout << ISEfilelist[90] << endl;
 		//for (int i = 3; i < ISEfilelist.size(); ++i)
-		//for (int i = 26; i <= 33; ++i)
+		for (int i = 77; i <= 83; ++i)
 		{
-			//readfile(ISEfilelist[i], 1);
-			readfile(ISEfilelist[90], 1);
-			readfile(ISEfilelist[91], 1);
+			readfile(ISEfilelist[i], 1);
+			//readfile(ISEfilelist[4], 1);
+			//readfile(ISEfilelist[5], 1);
 		}
-		//cout << CRSPfilelist[9] << endl;
-		readfile(CRSPfilelist[9], 2);
-		//readfile(CRSPfilelist[3], 2);
+		readfile(CRSPfilelist[8], 2);
+		//readfile(CRSPfilelist[9], 2);
 
 	}
 
@@ -355,14 +355,14 @@ class Data
 		    				file << Y[yy].M[mm].D[dd].U->at(uu).data[COMNAM] << ",";
 		    				file << Y[yy].M[mm].D[dd].U->at(uu).data[SHRCD] << ",";
 		    				file << Y[yy].M[mm].D[dd].U->at(uu).data[SHRCLS] << ",";
-		    				//file << "" << ",";
+		    				//file << "NA" << ",";
 		    				file << finddata(yy,mm,dd,uu,Y[yy].M[mm].D[dd].U->at(uu).undly,PRC,-1) << ",";
 	    				}
 	    				else
 	    				{
 	    					for (int i = 0; i < 8; ++i)
 	    					{
-	    						file << "" << ",";
+	    						file << "NA" << ",";
 	    					}
 	    				}
 	    				
@@ -372,7 +372,7 @@ class Data
 		    				for (int i = 2; i <= 9; ++i)
 		    				{
 		    					file << finddata(yy,mm,dd,uu,Y[yy].M[mm].D[dd].U->at(uu).undly,i,-j) << ",";
-		    					//file << "" << ",";
+		    					//file << "NA" << ",";
 		    				}
 		    			}
 						if (Y[yy].M[mm].D[dd].U->at(uu).data.size() > 10)
@@ -380,14 +380,23 @@ class Data
 			    			for (int j = 0; j <= 4; ++j)
 		    				{
 			    				file << finddata(yy,mm,dd,uu,Y[yy].M[mm].D[dd].U->at(uu).undly,VOL,-j) << ",";
-			    				//file << "" << ",";
+			    				//file << "NA" << ",";
 			    			}
 
 			    			for (int j = -1; j <= 4; ++j)
 		    				{
 			    				file << finddata(yy,mm,dd,uu,Y[yy].M[mm].D[dd].U->at(uu).undly,RET,j) << ",";
 			    			}
+			    			file << finddata(yy,mm,dd,uu,Y[yy].M[mm].D[dd].U->at(uu).undly,RET,5);
 			    		}
+			    		else
+	    				{
+	    					for (int i = 0; i < 11; ++i)
+	    					{
+	    						file << "NA" << ",";
+	    					}
+	    					file << "NA";
+	    				}
 	    				file << endl;	    				
 	    			}
 	    		}
@@ -414,7 +423,7 @@ class Data
 			}
 			if (Y[yy].M.size() == 0 || Y[yy].M[mm].D.size() == 0)
 			{
-				return "";
+				return "NA";
 			}
 			dd = Y[yy].M[mm].D.size() + dd;
 		}
@@ -428,9 +437,9 @@ class Data
 				yy = yy + 1;
 				mm = 0;
 			}
-			if (Y.size() == yy || Y[yy].M.size() == mm || Y[yy].M[mm].D.size() == 0)
+			if (Y.size() == yy || Y[yy].M.size() == mm ||  Y[yy].M[mm].D.size() == 0)
 			{
-				return "";
+				return "NA";
 			}
 		}
 		
@@ -462,7 +471,7 @@ class Data
 			j--;
 		}
 
-		return "";
+		return "NA";
 		
 	}
 
