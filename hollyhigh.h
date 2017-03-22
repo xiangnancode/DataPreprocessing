@@ -41,7 +41,7 @@ struct Undly
 struct Day
 {
 	int day;
-	vector<Undly> U;
+	vector<Undly> *U;// = new vector<Undly>;
 };
 
 struct Month
@@ -53,7 +53,6 @@ struct Year
 {
 	vector<Month> M;
 };
-
 
 class Data
 {
@@ -75,14 +74,15 @@ class Data
 	    	{
 	    		for (int dd = 0; dd < Y[yy].M[mm].D.size(); ++dd)
 	    		{
-	    			for (int uu = 0; uu < Y[yy].M[mm].D[dd].U.size(); ++uu)
+	    			for (int uu = 0; uu < Y[yy].M[mm].D[dd].U->size(); ++uu)
 	    			{
-	    				for (i = 0; i < Y[yy].M[mm].D[dd].U[uu].data.size()-1; ++i)
+	    				for (i = 0; i < Y[yy].M[mm].D[dd].U->at(uu).data.size()-1; ++i)
 	    				{
-	    					file << Y[yy].M[mm].D[dd].U[uu].data[i] << ",";
+	    					file << Y[yy].M[mm].D[dd].U->at(uu).data[i] << ",";
 	    				}
-	    				file << Y[yy].M[mm].D[dd].U[uu].data[i] << "\n";	    				
+	    				file << Y[yy].M[mm].D[dd].U->at(uu).data[i] << "\n";	    				
 	    			}
+	    			//delete Y[yy].M[mm].D[dd].U;
 	    		}
 	    		
 	    	}
@@ -117,7 +117,7 @@ class Data
 		  
 		}
 		if ((dir = opendir ("./CRSPdata/")) != NULL) {
-		  /* print all the files and directories within directory */
+		  // print all the files and directories within directory 
 		  while ((ent = readdir (dir)) != NULL) {
 		    name = ent->d_name;
 		    //cout << "./CRSPdata/"+name << endl;
@@ -132,13 +132,18 @@ class Data
 
 	void loaddata()
 	{
+		//cout << ISEfilelist[90] << endl;
 		//for (int i = 3; i < ISEfilelist.size(); ++i)
+		//for (int i = 26; i <= 33; ++i)
 		{
-			readfile(ISEfilelist[3], 1);
-			readfile(ISEfilelist[4], 1);
-			readfile(ISEfilelist[5], 1);
-			readfile(CRSPfilelist[2], 2);
+			//readfile(ISEfilelist[i], 1);
+			readfile(ISEfilelist[90], 1);
+			readfile(ISEfilelist[91], 1);
 		}
+		//cout << CRSPfilelist[9] << endl;
+		readfile(CRSPfilelist[9], 2);
+		//readfile(CRSPfilelist[3], 2);
+
 	}
 
 	void readfile(string filename, int flag)
@@ -154,7 +159,7 @@ class Data
 	    int k = 0;
 
 	    while(file.good())
-	    //for (int n = 0; n < 14986; ++n)
+	    //for (int n = 0; n < 750; ++n)
 	    {
 	    	for (int i = 0; i < (9+flag-1); i++){
 		        getline(file,entry,',');
@@ -237,7 +242,7 @@ class Data
 				{
 					newline[k].erase(remove_if(newline[k].begin(), newline[k].end(), ::isdigit),newline[k].end());
 				}
-				Y[yy-5].M[mm-1].D[i].U[j].data.push_back(newline[k]);
+				Y[yy-5].M[mm-1].D[i].U->at(j).data.push_back(newline[k]);
 			}
 		}
 
@@ -254,6 +259,7 @@ class Data
 			}
 			Y[yy-5].M[mm-1].D.push_back(Day());
 			Y[yy-5].M[mm-1].D[0].day = dd;
+			Y[yy-5].M[mm-1].D[0].U = new vector<Undly>;
 		}
 		else
 		{
@@ -268,6 +274,7 @@ class Data
 					}
 					Y[yy-5].M[mm-1].D.push_back(Day());
 					Y[yy-5].M[mm-1].D[i].day = dd;
+					Y[yy-5].M[mm-1].D[i].U = new vector<Undly>;
 					break;
 				}
 				
@@ -277,31 +284,34 @@ class Data
 	}
 	int undly2i(int yy,int mm,int i, string uu, int flag)
 	{
+		//cout << "now is in undly2i" << endl;
 		int j = 0;
-		if (Y[yy-5].M[mm-1].D[i].U.size() == 0)
+		if (Y[yy-5].M[mm-1].D[i].U->size() == 0)
 		{
-			Y[yy-5].M[mm-1].D[i].U.push_back(Undly());
-			Y[yy-5].M[mm-1].D[i].U[0].undly = uu;
+			Y[yy-5].M[mm-1].D[i].U->push_back(Undly());
+			Y[yy-5].M[mm-1].D[i].U->at(0).undly = uu;
 		}
 		else
 		{
-			while (Y[yy-5].M[mm-1].D[i].U[j].undly != uu)// find undly
+			while (Y[yy-5].M[mm-1].D[i].U->at(j).undly != uu)// find undly
 			{
+				//cout << "j = " << j << endl;
 				j++;
-				if (j == Y[yy-5].M[mm-1].D[i].U.size())// cant find, create a new undly
+				if (j == Y[yy-5].M[mm-1].D[i].U->size())// cant find, create a new undly
 				{
 					if (flag == 2)
 					{
 						return -1;
 					}
-					Y[yy-5].M[mm-1].D[i].U.push_back(Undly());
-					Y[yy-5].M[mm-1].D[i].U[j].undly = uu;
+					Y[yy-5].M[mm-1].D[i].U->push_back(Undly());
+					Y[yy-5].M[mm-1].D[i].U->at(j).undly = uu;
 
 					break;
 				}
 				
 			}
 		}
+		//cout << "leaveing unly2i" << endl;
 		return j;
 	}
 
@@ -318,6 +328,7 @@ class Data
 	    	for (int mm = 0; mm < Y[yy].M.size(); ++mm)
 	    	{
 	    		sprintf(filename,"./output/IC_20%02d_%02d.csv",yy+5,mm+1);
+	    		cout << "writing " << filename << "...\n";
 	    		file.open (filename);
 	    		file << "TRADE_DT,"<<"UNDLY,"<<"TICKER,"<<"TSYMBOL,"<<"CUSIP,"<<"PERMNO,";
 			    file <<"COMNAM,"<<"SHRCD,"<<"SHRCLS,"<<"PRICEL1,";
@@ -330,21 +341,22 @@ class Data
 			    file <<"RETP1,"<<"RETP2,"<<"RETP3,"<<"REPT4,"<<"RETP5"<< endl;
 	    		for (int dd = 0; dd < Y[yy].M[mm].D.size(); ++dd)
 	    		{
-	    			for (int uu = 0; uu < Y[yy].M[mm].D[dd].U.size(); ++uu)
+	    			for (int uu = 0; uu < Y[yy].M[mm].D[dd].U->size(); ++uu)
 	    			{
-	    				cout << yy+5 << "/" << mm+1 << "/" << Y[yy].M[mm].D[dd].day <<endl;
-	    				file << Y[yy].M[mm].D[dd].U[uu].data[DATE] << ",";
-	    				file << Y[yy].M[mm].D[dd].U[uu].data[UNDLY] << ",";
-	    				if (Y[yy].M[mm].D[dd].U[uu].data.size() > 10)
+	    				//cout << yy+5 << "/" << mm+1 << "/" << Y[yy].M[mm].D[dd].day <<endl;
+	    				file << Y[yy].M[mm].D[dd].U->at(uu).data[DATE] << ",";
+	    				file << Y[yy].M[mm].D[dd].U->at(uu).data[UNDLY] << ",";
+	    				if (Y[yy].M[mm].D[dd].U->at(uu).data.size() > 10)
 	    				{
-		    				file << Y[yy].M[mm].D[dd].U[uu].data[TICKER] << ",";
-		    				file << Y[yy].M[mm].D[dd].U[uu].data[TSYMBOL] << ",";
-		    				file << Y[yy].M[mm].D[dd].U[uu].data[CUSIP] << ",";
-		    				file << Y[yy].M[mm].D[dd].U[uu].data[PERMNO] << ",";
-		    				file << Y[yy].M[mm].D[dd].U[uu].data[COMNAM] << ",";
-		    				file << Y[yy].M[mm].D[dd].U[uu].data[SHRCD] << ",";
-		    				file << Y[yy].M[mm].D[dd].U[uu].data[SHRCLS] << ",";
-		    				file << finddata(yy,mm,dd,uu,Y[yy].M[mm].D[dd].U[uu].undly,PRC,-1) << ",";
+		    				file << Y[yy].M[mm].D[dd].U->at(uu).data[TICKER] << ",";
+		    				file << Y[yy].M[mm].D[dd].U->at(uu).data[TSYMBOL] << ",";
+		    				file << Y[yy].M[mm].D[dd].U->at(uu).data[CUSIP] << ",";
+		    				file << Y[yy].M[mm].D[dd].U->at(uu).data[PERMNO] << ",";
+		    				file << Y[yy].M[mm].D[dd].U->at(uu).data[COMNAM] << ",";
+		    				file << Y[yy].M[mm].D[dd].U->at(uu).data[SHRCD] << ",";
+		    				file << Y[yy].M[mm].D[dd].U->at(uu).data[SHRCLS] << ",";
+		    				//file << "" << ",";
+		    				file << finddata(yy,mm,dd,uu,Y[yy].M[mm].D[dd].U->at(uu).undly,PRC,-1) << ",";
 	    				}
 	    				else
 	    				{
@@ -359,24 +371,23 @@ class Data
 	    				{
 		    				for (int i = 2; i <= 9; ++i)
 		    				{
-		    					file << finddata(yy,mm,dd,uu,Y[yy].M[mm].D[dd].U[uu].undly,i,-j) << ",";
+		    					file << finddata(yy,mm,dd,uu,Y[yy].M[mm].D[dd].U->at(uu).undly,i,-j) << ",";
 		    					//file << "" << ",";
 		    				}
 		    			}
-						if (Y[yy].M[mm].D[dd].U[uu].data.size() > 10)
+						if (Y[yy].M[mm].D[dd].U->at(uu).data.size() > 10)
 	    				{
 			    			for (int j = 0; j <= 4; ++j)
 		    				{
-			    				file << finddata(yy,mm,dd,uu,Y[yy].M[mm].D[dd].U[uu].undly,VOL,-j) << ",";
+			    				file << finddata(yy,mm,dd,uu,Y[yy].M[mm].D[dd].U->at(uu).undly,VOL,-j) << ",";
 			    				//file << "" << ",";
 			    			}
 
-			    			for (int j = -1; j <= 5; ++j)
+			    			for (int j = -1; j <= 4; ++j)
 		    				{
-			    				file << finddata(yy,mm,dd,uu,Y[yy].M[mm].D[dd].U[uu].undly,RET,j) << ",";
+			    				file << finddata(yy,mm,dd,uu,Y[yy].M[mm].D[dd].U->at(uu).undly,RET,j) << ",";
 			    			}
 			    		}
-
 	    				file << endl;	    				
 	    			}
 	    		}
@@ -389,6 +400,7 @@ class Data
 
 	string finddata(int yy, int mm, int dd, int uu, string undly, int i, int offset)
 	{
+		//cout << "now in find data" << endl;
 
 		dd = dd + offset;
 		//cout << dd << endl;
@@ -416,58 +428,75 @@ class Data
 				yy = yy + 1;
 				mm = 0;
 			}
-			if (Y[yy].M.size() == 0 || Y[yy].M[mm].D.size() == 0)
+			if (Y.size() == yy || Y[yy].M.size() == mm || Y[yy].M[mm].D.size() == 0)
 			{
 				return "";
 			}
 		}
-			//cout << Y[yy].M[mm].D[dd].U[uu].data[i] << endl;
-		int j = 0;
+		
+		//cout <<"in finddata " << yy+5 << "/" << mm+1 << "/" << Y[yy].M[mm].D[dd].day <<endl;
+		int j = uu;
+		int k = uu;
 		while (1)
 		//for (int j = 0; j < 5; ++j)
 		{
-			if ( (uu-j) < 0 && (uu+j) >= Y[yy].M[mm].D[dd].U.size())
+			if ( j < 0 && k >= Y[yy].M[mm].D[dd].U->size())
 			{
 				break;
 			}
-			if ((uu+j) < Y[yy].M[mm].D[dd].U.size())
+			if (k < Y[yy].M[mm].D[dd].U->size() && k >= 0)
 			{
-				if (Y[yy].M[mm].D[dd].U[uu+j].undly == undly)
+				if (Y[yy].M[mm].D[dd].U->at(k).undly == undly)
 				{
-					return Y[yy].M[mm].D[dd].U[uu+j].data[i];
+					return Y[yy].M[mm].D[dd].U->at(k).data[i];
 				}
 			}
-			if ((uu-j) >= 0)
+			k++;
+			if (j < Y[yy].M[mm].D[dd].U->size() && j >= 0)
 			{
-				if (Y[yy].M[mm].D[dd].U[uu-j].undly == undly)
+				if (Y[yy].M[mm].D[dd].U->at(j).undly == undly)
 				{
-					return Y[yy].M[mm].D[dd].U[uu-j].data[i];
+					return Y[yy].M[mm].D[dd].U->at(j).data[i];
 				}
 			}
-			j++;
+			j--;
 		}
 
 		return "";
 		
 	}
 
+	void freenew()
+	{
+		for (int yy = 0; yy < Y.size(); ++yy)
+	    {
+	    	for (int mm = 0; mm < Y[yy].M.size(); ++mm)
+	    	{
+	    		for (int dd = 0; dd < Y[yy].M[mm].D.size(); ++dd)
+	    		{
+	    			delete Y[yy].M[mm].D[dd].U;
+	    		}
+	    		
+	    	}
+	    }
+	}
+
 
 	void test()
 	{
 		printf("hello world!\n");
+		vector<Day> Dtest;
+		string stest = "test";
+		Dtest.push_back(Day());
+		Dtest[0].day = 502;
+		Dtest[0].U = new vector<Undly>;
+		Dtest[0].U->push_back(Undly());
+		Dtest[0].U->at(0).undly = stest;
 
-		vector<int> *v = new vector<int>;
 
-		int i = 1;
+		cout << Dtest[0].U->at(0).undly << endl;
 
-		v->push_back(1);
-		v->push_back(2);
-		v->push_back(3);
-		v->push_back(4);
-
-		cout << (*v)[0] << endl;
-
-		delete v;
+		delete Dtest[0].U;
 		
 	}
 
@@ -486,6 +515,7 @@ public:
 		loaddata();
 		//testoutput();
 		output();
+		freenew();
 	}
 };
 #endif
