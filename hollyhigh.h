@@ -60,7 +60,7 @@ class Data
 	vector<string> CRSPfilelist;
 	vector<Year> Y;
 
-	void testoutput()
+	void testoutput(int yy, int mm)
 	{
 		ofstream file;
 		int i = 0;
@@ -68,9 +68,9 @@ class Data
 	    
 	    file << "Date,"<<"Ticker,"<<"OBC,"<<"OSC,"<<"CBC,"<<"CSC,"<<"OBP,"<<"OSP,"<<"CBP,"<<"CSP," << endl;
 	   
-	    for (int yy = 0; yy < Y.size(); ++yy)
+	    //for (int yy = 0; yy < Y.size(); ++yy)
 	    {
-	    	for (int mm = 0; mm < Y[yy].M.size(); ++mm)
+	    	//for (int mm = 0; mm < Y[yy].M.size(); ++mm)
 	    	{
 	    		for (int dd = 0; dd < Y[yy].M[mm].D.size(); ++dd)
 	    		{
@@ -134,14 +134,16 @@ class Data
 	{
 		//cout << ISEfilelist[90] << endl;
 		//for (int i = 3; i < ISEfilelist.size(); ++i)
-		for (int i = 2; i <= 2; ++i)
+
+		//for (int i = 26; i <= 33; ++i)
 		{
-			readfile(CRSPfilelist[i], 1);
-			//readfile(ISEfilelist[90], 1);
-			//readfile(ISEfilelist[91], 1);
+			//readfile(ISEfilelist[i], 1);
+			readfile(ISEfilelist[90], 1);
+			readfile(ISEfilelist[91], 1);
 		}
 		//cout << CRSPfilelist[9] << endl;
-		//readfile(CRSPfilelist[9], 2);
+		readfile(CRSPfilelist[9], 2);
+
 		//readfile(CRSPfilelist[3], 2);
 
 	}
@@ -161,7 +163,8 @@ class Data
 	    while(file.good())
 	    //for (int n = 0; n < 750; ++n)
 	    {
-	    	for (int i = 0; i < (10); i++){
+	    	for (int i = 0; i < (9+(flag-1)*12); i++){
+
 		        getline(file,entry,',');
 		        newline.push_back(entry);
 		        }
@@ -334,25 +337,50 @@ class Data
 	    			{
 	    				//cout << yy+5 << "/" << mm+1 << "/" << Y[yy].M[mm].D[dd].day <<endl;
 
-	    				for (int j = 0; j < 11; ++j)
+	    				file << Y[yy].M[mm].D[dd].U->at(uu).data[DATE] << ",";
+	    				file << Y[yy].M[mm].D[dd].U->at(uu).data[UNDLY] << ",";
+	    				if (Y[yy].M[mm].D[dd].U->at(uu).data.size() > 10)
+	    				{
+		    				file << Y[yy].M[mm].D[dd].U->at(uu).data[TICKER] << ",";
+		    				file << Y[yy].M[mm].D[dd].U->at(uu).data[TSYMBOL] << ",";
+		    				file << Y[yy].M[mm].D[dd].U->at(uu).data[CUSIP] << ",";
+		    				file << Y[yy].M[mm].D[dd].U->at(uu).data[PERMNO] << ",";
+		    				file << Y[yy].M[mm].D[dd].U->at(uu).data[COMNAM] << ",";
+		    				file << Y[yy].M[mm].D[dd].U->at(uu).data[SHRCD] << ",";
+		    				file << Y[yy].M[mm].D[dd].U->at(uu).data[SHRCLS] << ",";
+		    				//file << "" << ",";
+		    				file << Y[yy].M[mm].D[dd].U->at(uu).data[21] << ",";
+	    				}
+	    				else
 	    				{
 	    					file << Y[yy].M[mm].D[dd].U->at(uu).data[j] << ",";
 	    				}
 	    	
 		    			file << finddata(yy,mm,dd,uu,Y[yy].M[mm].D[dd].U->at(uu).undly,8,-1) << ",";
 	    				
-						//if (Y[yy].M[mm].D[dd].U->at(uu).data.size() > 10)
+
+		    			for (int j = 0; j <= 3; ++j)
 	    				{
-			    			for (int j = 0; j <= 4; ++j)
+		    				for (int i = 2; i <= 9; ++i)
 		    				{
-			    				file << finddata(yy,mm,dd,uu,Y[yy].M[mm].D[dd].U->at(uu).undly,9,-j) << ",";
+		    					file << finddata(yy,mm,dd,uu,Y[yy].M[mm].D[dd].U->at(uu).undly,i,-j) << ",";
+		    				}
+		    			}
+		    			for (int i = 2; i <= 8; ++i)
+		    			{
+		    				file << finddata(yy,mm,dd,uu,Y[yy].M[mm].D[dd].U->at(uu).undly,i,-4) << ",";
+		    			}
+		    			file << finddata(yy,mm,dd,uu,Y[yy].M[mm].D[dd].U->at(uu).undly,9,-4);
+
+						if (Y[yy].M[mm].D[dd].U->at(uu).data.size() > 21)
+	    				{
+			    			for (int j = 22; j < Y[yy].M[mm].D[dd].U->at(uu).data.size()-1; ++j)
+		    				{
+			    				file << Y[yy].M[mm].D[dd].U->at(uu).data[j] << ",";
 			    				//file << "" << ",";
 			    			}
+			    			file << Y[yy].M[mm].D[dd].U->at(uu).data[Y[yy].M[mm].D[dd].U->at(uu).data.size()-1];
 
-			    			for (int j = -1; j <= 5; ++j)
-		    				{
-			    				file << finddata(yy,mm,dd,uu,Y[yy].M[mm].D[dd].U->at(uu).undly,10,j) << ",";
-			    			}
 			    		}
 	    				file << endl;	    				
 	    			}
@@ -380,7 +408,7 @@ class Data
 			}
 			if (Y[yy].M.size() == 0 || Y[yy].M[mm].D.size() == 0)
 			{
-				return "NA";
+				return "0";
 			}
 			dd = Y[yy].M[mm].D.size() + dd;
 		}
@@ -396,7 +424,7 @@ class Data
 			}
 			if (Y.size() == yy || Y[yy].M.size() == mm || Y[yy].M[mm].D.size() == 0)
 			{
-				return "NA";
+				return "0";
 			}
 		}
 		
@@ -479,21 +507,26 @@ public:
 	void process()
 	{
 		getfilelist();
-		int yy = 5,mm = 5;
+
+		//cout << ISEfilelist[76] << endl;
+		//return;
+
+		int yy = 11,mm = 5;
 		int ly = 0, lm = 0;
-		readfile(CRSPfilelist[2], 1);
-		readfile(CRSPfilelist[3], 1);
+		readfile(ISEfilelist[4+72], 1);
+		readfile(CRSPfilelist[3+72], 2);
 		output(yy-5,mm-1);
 		ly = yy;
 		lm = mm;
 		mm++;
 
-		for (int i = 4; i < CRSPfilelist.size(); ++i)
+
+		for (int i = 73; i <= 87; ++i)
 		//for (int i = 4; i <=4 ; i++)
 		{
 			
-
-			readfile(CRSPfilelist[i], 1);
+			readfile(ISEfilelist[4+i], 1);
+			readfile(CRSPfilelist[3+i], 2);
 			//cout << CRSPfilelist[i] << endl;
 			//cout << yy << "/" << mm << endl;
 			output(yy-5,mm-1);
@@ -503,14 +536,13 @@ public:
 			yy = yy + (mm + 1 - 1) / 12;
 			mm = (mm + 1 - 1) % 12 + 1;
 		}
-		output(yy-5,mm-1);
+		//output(yy-5,mm-1);
 		freenew(ly-5,lm-1);
-		freenew(yy-5,mm-1);
-
-
+		//freenew(yy-5,mm-1);
 		//loaddata();
 		//testoutput();
-		
+		//output();
+		//freenew();
 	}
 };
 #endif
