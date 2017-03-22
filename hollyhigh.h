@@ -59,9 +59,8 @@ class Data
 	vector<string> ISEfilelist;
 	vector<string> CRSPfilelist;
 	vector<Year> Y;
-	vector<int> date;
 
-	void output()
+	void testoutput()
 	{
 		ofstream file;
 		int i = 0;
@@ -130,16 +129,18 @@ class Data
 		}
 	}
 
-	void loadISE()
+	void loaddata()
 	{
 		//for (int i = 3; i < ISEfilelist.size(); ++i)
 		{
-			readISEfile(ISEfilelist[3]);
-			readISEfile(ISEfilelist[4]);
+			readfile(ISEfilelist[3], 1);
+			readfile(ISEfilelist[4], 1);
+			readfile(ISEfilelist[5], 1);
+			readfile(CRSPfilelist[2], 2);
 		}
 	}
 
-	void readISEfile(string filename)
+	void readfile(string filename, int flag)
 	{
 		//cout << filename << endl;
 		ifstream file (filename);
@@ -154,7 +155,7 @@ class Data
 	    while(file.good())
 	    //for (int n = 0; n < 14986; ++n)
 	    {
-	    	for (int i = 0; i < 9; i++){
+	    	for (int i = 0; i < (9+flag-1); i++){
 		        getline(file,entry,',');
 		        newline.push_back(entry);
 		        }
@@ -163,8 +164,8 @@ class Data
 
 	        //printline(newline);
 	        if (!newline[0].empty())
-	        {
-	        	add2Y(newline);
+			{
+	        	add2Y(newline,flag);
 	        }
 	        
 	        //cout << newline[0].empty() << endl;
@@ -174,11 +175,21 @@ class Data
 	    file.close();
 	}
 
-	void add2Y(vector<string> newline)
+	void add2Y(vector<string> newline, int flag)
 	{
 		int today,yy,mm,dd;
-		string uu = newline[UNDLY];
-		today = stoi(newline[DATE],nullptr,10);
+		string uu;
+		if (flag == 1)
+		{
+			uu = newline[UNDLY];
+			today = stoi(newline[DATE],nullptr,10);
+		}
+		else if (flag == 2)
+		{
+			uu = newline[6];
+			today = stoi(newline[1],nullptr,10);
+		}
+
 		yy = today / 10000;
 		yy = yy % 100;
 		dd = today % 100;
@@ -186,39 +197,55 @@ class Data
 		mm = mm % 100;
 
 		//cout << "yy/mm/dd\n";
-		cout << yy << "/" << mm << "/" << dd <<endl;
+		//cout << yy << "/" << mm << "/" << dd << "    " << flag <<endl;
 
-		if (Y.size() < (yy-4) )
+		//if (flag == 1)
 		{
-			Y.push_back(Year());
+			if (Y.size() < (yy-4) )
+			{
+				Y.push_back(Year());
+			}
+			
+			while (Y[yy-5].M.size() < mm)
+			{
+				Y[yy-5].M.push_back(Month());
+			}
 		}
+
 		
-		while (Y[yy-5].M.size() < mm)
-		{
-			Y[yy-5].M.push_back(Month());
-		}
 
 
 		//cout << "before i\n";
-		int i = day2i(yy,mm,dd);
+		int i = day2i(yy,mm,dd,flag);
 		//cout << "i = " << i << endl;
 		//cout << "before j\n";
-		int j = undly2i(yy,mm,i,uu);
+		int j = 0;
+		if (i != -1)
+		{
+			j = undly2i(yy,mm,i,uu,flag);
+		}
+		
 		//cout << "j = " << j << endl;
 
-		for (int k = 0; k < newline.size(); ++k)
+		if (i != -1 && j != -1)
 		{
-			Y[yy-5].M[mm-1].D[i].U[j].data.push_back(newline[k]);
+			for (int k = 0; k < newline.size(); ++k)
+			{
+				Y[yy-5].M[mm-1].D[i].U[j].data.push_back(newline[k]);
+			}
 		}
 
-		
 	}
 
-	int day2i(int yy,int mm,int dd)
+	int day2i(int yy,int mm,int dd, int flag)
 	{
 		int i = 0;
 		if (Y[yy-5].M[mm-1].D.size() == 0)
 		{
+			if (flag == 2)
+			{
+				return -1;
+			}
 			Y[yy-5].M[mm-1].D.push_back(Day());
 			Y[yy-5].M[mm-1].D[0].day = dd;
 		}
@@ -229,6 +256,10 @@ class Data
 				i++;
 				if (i == Y[yy-5].M[mm-1].D.size())// cant find, create a new day
 				{
+					if (flag == 2)
+					{
+						return -1;
+					}
 					Y[yy-5].M[mm-1].D.push_back(Day());
 					Y[yy-5].M[mm-1].D[i].day = dd;
 					break;
@@ -238,7 +269,7 @@ class Data
 		}
 		return i;
 	}
-	int undly2i(int yy,int mm,int i,string uu)
+	int undly2i(int yy,int mm,int i, string uu, int flag)
 	{
 		int j = 0;
 		if (Y[yy-5].M[mm-1].D[i].U.size() == 0)
@@ -248,11 +279,15 @@ class Data
 		}
 		else
 		{
-			while (Y[yy-5].M[mm-1].D[i].U[j].undly != uu)// find day
+			while (Y[yy-5].M[mm-1].D[i].U[j].undly != uu)// find undly
 			{
 				j++;
-				if (j == Y[yy-5].M[mm-1].D[i].U.size())// cant find, create a new day
+				if (j == Y[yy-5].M[mm-1].D[i].U.size())// cant find, create a new undly
 				{
+					if (flag == 2)
+					{
+						return -1;
+					}
 					Y[yy-5].M[mm-1].D[i].U.push_back(Undly());
 					Y[yy-5].M[mm-1].D[i].U[j].undly = uu;
 
@@ -263,6 +298,149 @@ class Data
 		}
 		return j;
 	}
+
+	void output()
+	{
+		ofstream file;
+	    file.open ("testoutput.csv");
+	    
+	    file << "TRADE_DT,"<<"UNDLY,"<<"TICKER,"<<"TSYMBOL,"<<"CUSIP,"<<"PERMNO,";
+	    file <<"COMNAM,"<<"SHRCD,"<<"SHRCLS,"<<"PRICEL1,";
+	    file <<"OBC,"<<"OSC,"<<"CBC,"<<"CSC,"<<"OBP,"<<"OSP,"<<"CBP,"<<"CSP,";
+	    file <<"OBCL1,"<<"OSCL1,"<<"CBCL1,"<<"CSCL1,"<<"OBPL1,"<<"OSPL1,"<<"CBPL1,"<<"CSPL1,";
+	    file <<"OBCL2,"<<"OSCL2,"<<"CBCL2,"<<"CSCL2,"<<"OBPL2,"<<"OSPL2,"<<"CBPL2,"<<"CSPL2,";
+	    file <<"OBCL3,"<<"OSCL3,"<<"CBCL3,"<<"CSCL3,"<<"OBPL3,"<<"OSPL3,"<<"CBPL3,"<<"CSPL3,";
+	    file <<"OBCL4,"<<"OSCL4,"<<"CBCL4,"<<"CSCL4,"<<"OBPL4,"<<"OSPL4,"<<"CBPL4,"<<"CSPL4,";
+	    file <<"VOL,"<<"VOLL1,"<<"VOLL2,"<<"VOLL3,"<<"VOLL4,"<<"RETL1,"<<"RET,";
+	    file <<"RETP1,"<<"RETP2,"<<"RETP3,"<<"REPT4,"<<"RETP5"<< endl;
+	   
+	    for (int yy = 0; yy < Y.size(); ++yy)
+	    {
+	    	for (int mm = 0; mm < Y[yy].M.size(); ++mm)
+	    	{
+	    		for (int dd = 0; dd < Y[yy].M[mm].D.size(); ++dd)
+	    		{
+	    			for (int uu = 0; uu < Y[yy].M[mm].D[dd].U.size(); ++uu)
+	    			{
+	    				cout << yy+5 << "/" << mm+1 << "/" << Y[yy].M[mm].D[dd].day <<endl;
+	    				file << Y[yy].M[mm].D[dd].U[uu].data[DATE] << ",";
+	    				file << Y[yy].M[mm].D[dd].U[uu].data[UNDLY] << ",";
+	    				if (Y[yy].M[mm].D[dd].U[uu].data.size() > 10)
+	    				{
+		    				file << Y[yy].M[mm].D[dd].U[uu].data[TICKER] << ",";
+		    				file << Y[yy].M[mm].D[dd].U[uu].data[TSYMBOL] << ",";
+		    				file << Y[yy].M[mm].D[dd].U[uu].data[CUSIP] << ",";
+		    				file << Y[yy].M[mm].D[dd].U[uu].data[PERMNO] << ",";
+		    				file << Y[yy].M[mm].D[dd].U[uu].data[COMNAM] << ",";
+		    				file << Y[yy].M[mm].D[dd].U[uu].data[SHRCD] << ",";
+		    				file << Y[yy].M[mm].D[dd].U[uu].data[SHRCLS] << ",";
+		    				file << finddata(yy,mm,dd,uu,Y[yy].M[mm].D[dd].U[uu].undly,PRC,-1) << ",";
+	    				}
+	    				else
+	    				{
+	    					for (int i = 0; i < 8; ++i)
+	    					{
+	    						file << "" << ",";
+	    					}
+	    				}
+	    				
+
+		    			for (int j = 0; j <= 4; ++j)
+	    				{
+		    				for (int i = 2; i <= 9; ++i)
+		    				{
+		    					file << finddata(yy,mm,dd,uu,Y[yy].M[mm].D[dd].U[uu].undly,i,-j) << ",";
+		    					//file << "" << ",";
+		    				}
+		    			}
+						if (Y[yy].M[mm].D[dd].U[uu].data.size() > 10)
+	    				{
+			    			for (int j = 0; j <= 4; ++j)
+		    				{
+			    				file << finddata(yy,mm,dd,uu,Y[yy].M[mm].D[dd].U[uu].undly,VOL,-j) << ",";
+			    				//file << "" << ",";
+			    			}
+
+			    			for (int j = -1; j <= 5; ++j)
+		    				{
+			    				file << finddata(yy,mm,dd,uu,Y[yy].M[mm].D[dd].U[uu].undly,RET,j) << ",";
+			    			}
+			    		}
+
+	    				file << endl;	    				
+	    			}
+	    		}
+	    		
+	    	}
+	    }
+
+	    file.close();
+	}
+
+	string finddata(int yy, int mm, int dd, int uu, string undly, int i, int offset)
+	{
+
+		dd = dd + offset;
+		//cout << dd << endl;
+		if (dd < 0)// pre month
+		{
+			mm = mm - 1;
+			if (mm < 0)
+			{
+				yy = yy - 1;
+				mm = 11;
+			}
+			if (Y[yy].M[mm].D.size() == 0)
+			{
+				return "";
+			}
+			dd = Y[yy].M[mm].D.size() + dd;
+		}
+		else if (dd >= Y[yy].M[mm].D.size())// next month
+		{
+			//cout << "next" << endl;
+			dd = dd - Y[yy].M[mm].D.size();
+			mm = mm + 1;
+			if (mm >= 12)
+			{
+				yy = yy + 1;
+				mm = 1;
+			}
+			if (Y[yy].M[mm].D.size() == 0)
+			{
+				return "";
+			}
+		}
+			//cout << Y[yy].M[mm].D[dd].U[uu].data[i] << endl;
+		int j = 0;
+		while (1)
+		//for (int j = 0; j < 5; ++j)
+		{
+			if ( (uu-j) < 0 && (uu+j) >= Y[yy].M[mm].D[dd].U.size())
+			{
+				break;
+			}
+			if ((uu+j) < Y[yy].M[mm].D[dd].U.size())
+			{
+				if (Y[yy].M[mm].D[dd].U[uu+j].undly == undly)
+				{
+					return Y[yy].M[mm].D[dd].U[uu+j].data[i];
+				}
+			}
+			if ((uu-j) >= 0)
+			{
+				if (Y[yy].M[mm].D[dd].U[uu-j].undly == undly)
+				{
+					return Y[yy].M[mm].D[dd].U[uu-j].data[i];
+				}
+			}
+			j++;
+		}
+
+		return "";
+		
+	}
+
 
 	void test()
 	{
@@ -288,7 +466,8 @@ public:
 	void process()
 	{
 		getfilelist();
-		loadISE();
+		loaddata();
+		//testoutput();
 		output();
 	}
 };
