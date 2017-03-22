@@ -7,6 +7,7 @@
 #include <vector>
 #include <string>
 #include <dirent.h>
+#include <algorithm>
 
 using namespace std;
 #define DATE 0
@@ -163,7 +164,7 @@ class Data
 	        newline.push_back(entry);// read one line
 
 	        //printline(newline);
-	        if (!newline[0].empty())
+	        if (!newline[0].empty() && !newline[9].empty())
 			{
 	        	add2Y(newline,flag);
 	        }
@@ -182,6 +183,7 @@ class Data
 		if (flag == 1)
 		{
 			uu = newline[UNDLY];
+			uu.erase(remove_if(uu.begin(), uu.end(), ::isdigit),uu.end());
 			today = stoi(newline[DATE],nullptr,10);
 		}
 		else if (flag == 2)
@@ -201,7 +203,7 @@ class Data
 
 		//if (flag == 1)
 		{
-			if (Y.size() < (yy-4) )
+			while (Y.size() < (yy-4) )
 			{
 				Y.push_back(Year());
 			}
@@ -231,6 +233,10 @@ class Data
 		{
 			for (int k = 0; k < newline.size(); ++k)
 			{
+				if (k == UNDLY && flag == 1)
+				{
+					newline[k].erase(remove_if(newline[k].begin(), newline[k].end(), ::isdigit),newline[k].end());
+				}
 				Y[yy-5].M[mm-1].D[i].U[j].data.push_back(newline[k]);
 			}
 		}
@@ -302,22 +308,26 @@ class Data
 	void output()
 	{
 		ofstream file;
-	    file.open ("testoutput.csv");
+		char filename[20];
+	    //file.open ("testoutput.csv");
 	    
-	    file << "TRADE_DT,"<<"UNDLY,"<<"TICKER,"<<"TSYMBOL,"<<"CUSIP,"<<"PERMNO,";
-	    file <<"COMNAM,"<<"SHRCD,"<<"SHRCLS,"<<"PRICEL1,";
-	    file <<"OBC,"<<"OSC,"<<"CBC,"<<"CSC,"<<"OBP,"<<"OSP,"<<"CBP,"<<"CSP,";
-	    file <<"OBCL1,"<<"OSCL1,"<<"CBCL1,"<<"CSCL1,"<<"OBPL1,"<<"OSPL1,"<<"CBPL1,"<<"CSPL1,";
-	    file <<"OBCL2,"<<"OSCL2,"<<"CBCL2,"<<"CSCL2,"<<"OBPL2,"<<"OSPL2,"<<"CBPL2,"<<"CSPL2,";
-	    file <<"OBCL3,"<<"OSCL3,"<<"CBCL3,"<<"CSCL3,"<<"OBPL3,"<<"OSPL3,"<<"CBPL3,"<<"CSPL3,";
-	    file <<"OBCL4,"<<"OSCL4,"<<"CBCL4,"<<"CSCL4,"<<"OBPL4,"<<"OSPL4,"<<"CBPL4,"<<"CSPL4,";
-	    file <<"VOL,"<<"VOLL1,"<<"VOLL2,"<<"VOLL3,"<<"VOLL4,"<<"RETL1,"<<"RET,";
-	    file <<"RETP1,"<<"RETP2,"<<"RETP3,"<<"REPT4,"<<"RETP5"<< endl;
+	    
 	   
 	    for (int yy = 0; yy < Y.size(); ++yy)
 	    {
 	    	for (int mm = 0; mm < Y[yy].M.size(); ++mm)
 	    	{
+	    		sprintf(filename,"./output/IC_20%02d_%02d.csv",yy+5,mm+1);
+	    		file.open (filename);
+	    		file << "TRADE_DT,"<<"UNDLY,"<<"TICKER,"<<"TSYMBOL,"<<"CUSIP,"<<"PERMNO,";
+			    file <<"COMNAM,"<<"SHRCD,"<<"SHRCLS,"<<"PRICEL1,";
+			    file <<"OBC,"<<"OSC,"<<"CBC,"<<"CSC,"<<"OBP,"<<"OSP,"<<"CBP,"<<"CSP,";
+			    file <<"OBCL1,"<<"OSCL1,"<<"CBCL1,"<<"CSCL1,"<<"OBPL1,"<<"OSPL1,"<<"CBPL1,"<<"CSPL1,";
+			    file <<"OBCL2,"<<"OSCL2,"<<"CBCL2,"<<"CSCL2,"<<"OBPL2,"<<"OSPL2,"<<"CBPL2,"<<"CSPL2,";
+			    file <<"OBCL3,"<<"OSCL3,"<<"CBCL3,"<<"CSCL3,"<<"OBPL3,"<<"OSPL3,"<<"CBPL3,"<<"CSPL3,";
+			    file <<"OBCL4,"<<"OSCL4,"<<"CBCL4,"<<"CSCL4,"<<"OBPL4,"<<"OSPL4,"<<"CBPL4,"<<"CSPL4,";
+			    file <<"VOL,"<<"VOLL1,"<<"VOLL2,"<<"VOLL3,"<<"VOLL4,"<<"RETL1,"<<"RET,";
+			    file <<"RETP1,"<<"RETP2,"<<"RETP3,"<<"REPT4,"<<"RETP5"<< endl;
 	    		for (int dd = 0; dd < Y[yy].M[mm].D.size(); ++dd)
 	    		{
 	    			for (int uu = 0; uu < Y[yy].M[mm].D[dd].U.size(); ++uu)
@@ -370,11 +380,11 @@ class Data
 	    				file << endl;	    				
 	    			}
 	    		}
-	    		
+	    		file.close();
 	    	}
 	    }
 
-	    file.close();
+	    //file.close();
 	}
 
 	string finddata(int yy, int mm, int dd, int uu, string undly, int i, int offset)
@@ -390,7 +400,7 @@ class Data
 				yy = yy - 1;
 				mm = 11;
 			}
-			if (Y[yy].M[mm].D.size() == 0)
+			if (Y[yy].M.size() == 0 || Y[yy].M[mm].D.size() == 0)
 			{
 				return "";
 			}
@@ -401,12 +411,12 @@ class Data
 			//cout << "next" << endl;
 			dd = dd - Y[yy].M[mm].D.size();
 			mm = mm + 1;
-			if (mm >= 12)
+			if (mm >= 11)
 			{
 				yy = yy + 1;
-				mm = 1;
+				mm = 0;
 			}
-			if (Y[yy].M[mm].D.size() == 0)
+			if (Y[yy].M.size() == 0 || Y[yy].M[mm].D.size() == 0)
 			{
 				return "";
 			}
@@ -445,12 +455,19 @@ class Data
 	void test()
 	{
 		printf("hello world!\n");
-		vector<string> s;
-		string a = "apple";
 
-		s.push_back(a);
+		vector<int> *v = new vector<int>;
 
-		cout << s.size() << endl;
+		int i = 1;
+
+		v->push_back(1);
+		v->push_back(2);
+		v->push_back(3);
+		v->push_back(4);
+
+		cout << (*v)[0] << endl;
+
+		delete v;
 		
 	}
 
